@@ -1,0 +1,13 @@
+<component name="ArtifactManager">
+  <artifact type="exploded-war" name="demo01-Process-scheduling:war exploded">
+    <output-path>$PROJECT_DIR$/out/artifacts/demo01_Process_scheduling_war_exploded</output-path>
+    <root id="root">
+      <element id="directory" name="WEB-INF">
+        <element id="directory" name="classes">
+          <element id="module-output" name="demo01-Process-scheduling" />
+        </element>
+      </element>
+      <element id="javaee-facet-resources" facet="demo01-Process-scheduling/web/Web" />
+    </root>
+  </artifact>
+</component>

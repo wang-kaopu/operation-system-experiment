@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/demo01-Process-scheduling/demo01-Process-scheduling.iml" filepath="$PROJECT_DIR$/demo01-Process-scheduling/demo01-Process-scheduling.iml" />
+      <module fileurl="file://$PROJECT_DIR$/operation-system-experiment.iml" filepath="$PROJECT_DIR$/operation-system-experiment.iml" />
+    </modules>
+  </component>
+</project>

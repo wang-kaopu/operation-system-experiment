@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Process Submission Form</title>
+</head>
+<body>
+<h1>Process Submission Form</h1>
+<form action="/Process_scheduling/Update/addProcess" method="post">
+    <label for="processName">Process Name:</label><br>
+    <input type="text" id="processName" name="processName" required><br><br>
+
+    <label for="level">Priority Level:</label><br>
+    <input type="number" id="level" name="level" required><br><br>
+
+    <label for="arriveTime">Arrive Time (yyyy-MM-dd HH:mm):</label><br>
+    <input type="datetime-local" id="arriveTime" name="arriveTime" required><br><br>
+
+    <label for="runTime">Run Time (seconds):</label><br>
+    <input type="number" id="runTime" name="runTime" required><br><br>
+
+    <input type="submit" value="Submit">
+</form>
+</body>
+</html>

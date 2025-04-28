@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scheduling Form</title>
+</head>
+<body>
+<h1>Scheduling Form</h1>
+<form action="/Process_scheduling/Scheduling" method="post">
+    <label>Select Algorithm:</label><br>
+    <input type="radio" id="algorithm1" name="algorithm" value="RoundRobinScheduling" onclick="toggleTimeQuantum()">
+    <label for="algorithm1"> RoundRobinScheduling</label><br>
+    <input type="radio" id="algorithm2" name="algorithm" value="FCFS" onclick="toggleTimeQuantum()">
+    <label for="algorithm2"> FCFS</label><br><br>
+
+    <!-- Time Quantum input field -->
+    <div id="timeQuantumContainer" style="display: none;">
+        <label for="timeQuantum">Time Quantum (for RoundRobinScheduling):</label><br>
+        <input type="number" id="timeQuantum" name="timeQuantum" min="1" placeholder="Enter time quantum">
+        <br><br>
+    </div>
+
+    <input type="submit" value="Submit">
+</form>
+
+<script>
+    // JavaScript to control the display of the timeQuantum input field
+    function toggleTimeQuantum() {
+        var rrRadio = document.getElementById('algorithm1');
+        var timeQuantumContainer = document.getElementById('timeQuantumContainer');
+        if (rrRadio.checked) {
+            timeQuantumContainer.style.display = 'block';
+        } else {
+            timeQuantumContainer.style.display = 'none';
+        }
+    }
+</script>
+</body>
+</html>
