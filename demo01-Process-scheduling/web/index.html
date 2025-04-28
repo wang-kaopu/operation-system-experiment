@@ -10,26 +10,35 @@
 <form action="/Process_scheduling/Scheduling" method="post">
     <label>Select Algorithm:</label><br>
     <input type="radio" id="algorithm1" name="algorithm" value="RoundRobinScheduling" onclick="toggleTimeQuantum()">
-    <label for="algorithm1"> RoundRobinScheduling</label><br>
+    <label for="algorithm1"> Round Robin Scheduling</label><br>
     <input type="radio" id="algorithm2" name="algorithm" value="FCFS" onclick="toggleTimeQuantum()">
-    <label for="algorithm2"> FCFS</label><br><br>
+    <label for="algorithm2"> FCFS</label><br>
+    <input type="radio" id="algorithm3" name="algorithm" value="MultilevelFeedbackQueue" onclick="toggleTimeQuantum()">
+    <label for="algorithm3"> Multilevel Feedback Queue</label><br><br>
 
-    <!-- Time Quantum input field -->
+    <!-- Time Quantum input fields -->
     <div id="timeQuantumContainer" style="display: none;">
-        <label for="timeQuantum">Time Quantum (for RoundRobinScheduling):</label><br>
-        <input type="number" id="timeQuantum" name="timeQuantum" min="1" placeholder="Enter time quantum">
-        <br><br>
+        <label for="timeQuantum1">Time Quantum 1:</label><br>
+        <input type="number" id="timeQuantum1" name="timeQuantum1" min="1" placeholder="Enter time quantum 1"><br><br>
+
+        <label for="timeQuantum2">Time Quantum 2:</label><br>
+        <input type="number" id="timeQuantum2" name="timeQuantum2" min="1" placeholder="Enter time quantum 2"><br><br>
+
+        <label for="timeQuantum3">Time Quantum 3:</label><br>
+        <input type="number" id="timeQuantum3" name="timeQuantum3" min="1" placeholder="Enter time quantum 3"><br><br>
     </div>
 
     <input type="submit" value="Submit">
 </form>
 
 <script>
-    // JavaScript to control the display of the timeQuantum input field
+    // JavaScript to control the display of the timeQuantum input fields
     function toggleTimeQuantum() {
         var rrRadio = document.getElementById('algorithm1');
+        var mlfqRadio = document.getElementById('algorithm3');
         var timeQuantumContainer = document.getElementById('timeQuantumContainer');
-        if (rrRadio.checked) {
+
+        if (rrRadio.checked || mlfqRadio.checked) {
             timeQuantumContainer.style.display = 'block';
         } else {
             timeQuantumContainer.style.display = 'none';

@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,7 +21,7 @@ public class SchedulingServlet extends HttpServlet {
     private PcbDAOImpl pcbDAO = new PcbDAOImpl();
 
     @Override
-    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void service(HttpServletRequest req, HttpServletResponse resp){
         String algorithm = req.getParameter("algorithm");
         Class<? extends SchedulingServlet> clazz = this.getClass();
         Method method;
@@ -35,7 +34,7 @@ public class SchedulingServlet extends HttpServlet {
         }
     }
 
-    private void RoundRobinScheduling(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    private void RoundRobinScheduling(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("text/html;charset=utf-8");
         // 1. 获取全部进程，按时间先后顺序排序
         List<Pcb> pcbList = pcbDAO.getAllPcb();
@@ -46,13 +45,13 @@ public class SchedulingServlet extends HttpServlet {
             }
         });
         // 2. 获取时间片长度（分钟）
-        Integer timeQuantum = Integer.valueOf(req.getParameter("timeQuantum"));
+        int timeQuantum = Integer.valueOf(req.getParameter("timeQuantum"));
         // 3. 将进程列表转为队列
         LinkedList<Pcb> pcbLinkedList = new LinkedList<>(pcbList);
         // 4. 开始轮转，一边进行一边输出
         PrintWriter respWriter = resp.getWriter();
         int count = 1;
-        int run = 0;
+        int run;
         while (!pcbLinkedList.isEmpty()) {
             // 出队
             Pcb head = pcbLinkedList.removeFirst();
@@ -121,5 +120,58 @@ public class SchedulingServlet extends HttpServlet {
         }
     }
 
+    private void MultilevelFeedbackQueue(HttpServletRequest req, HttpServletResponse resp) {
+        resp.setCharacterEncoding("UTF-8");
+        List<Pcb> pcbList = pcbDAO.getAllPcb();
+        LinkedList<Pcb> queue1 = new LinkedList<>(pcbList), queue2 = new LinkedList<>(), queue3 = new LinkedList<>();
+        pcbList.sort(new Comparator<Pcb>() {
+            @Override
+            public int compare(Pcb o1, Pcb o2) {
+                return o1.getArriveTime().compareTo(o2.getArriveTime());
+            }
+        });
+        int timeQuantum1 = Integer.parseInt(req.getParameter("timeQuantum1")),
+                timeQuantum2 = Integer.parseInt(req.getParameter("timeQuantum2")),
+                timeQuantum3 = Integer.parseInt(req.getParameter("timeQuantum3"));
 
+        try (PrintWriter writer = resp.getWriter()){
+            resp.setContentType("text/html");
+            detect(queue1, queue2, timeQuantum1, writer);
+            detect(queue2, queue3, timeQuantum2, writer);
+            detect(queue3, queue3, timeQuantum3, writer);
+            writer.println("所有进程调度完成");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    private void detect(LinkedList<Pcb> queue2, LinkedList<Pcb> queue3, int timeQuantum1, PrintWriter writer) {
+        String str;
+        while (!queue2.isEmpty()) {
+            Pcb head = queue2.removeFirst();
+            head.setState(1);
+            int usedTime = head.getUsedTime(), runTime = head.getRunTime();
+            if (usedTime >= runTime) {
+                head.setState(2);
+                continue;
+            }
+            int sub = runTime - usedTime;
+            if (timeQuantum1 > sub) {
+                // 一个时间片可以解决
+                head.setState(2);
+                head.setUsedTime(runTime);
+                str = "FINISHED, 运行了" + sub + "分钟";
+            } else {
+                // 一个时间片还不能解决
+                head.setUsedTime(usedTime + timeQuantum1);
+                head.setState(0);
+                queue3.addLast(head);
+                str = "READY, 运行了" + timeQuantum1 + "分钟";
+            }
+
+            writer.println("pid:" + head.getPid() + "," + "process_name:" + head.getProcessName()
+                    + ":" + str + "<br>");
+        }
+    }
 }
