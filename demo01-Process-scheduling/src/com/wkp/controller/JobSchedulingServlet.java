@@ -101,7 +101,14 @@ public class JobSchedulingServlet extends HttpServlet {
         selectAndRun(resp, jcbLinkedList, heap);
     }
 
+    /**
+     * 从堆中选出目标进程并执行
+     * @param resp
+     * @param jcbLinkedList 含有所有进程的队列
+     * @param heap 用于选取目标进程的队列
+     */
     private void selectAndRun(HttpServletResponse resp, LinkedList<Jcb> jcbLinkedList, PriorityQueue<Jcb> heap) {
+        // 初始化时间为最早到达的任务的到达时间
         LocalDateTime currentTime = jcbLinkedList.getFirst().getArriveTime();
         resp.setContentType("text/html");
         try (PrintWriter respWriter = resp.getWriter()) {
