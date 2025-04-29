@@ -1,7 +1,6 @@
 package com.wkp.controller;
 
 import com.wkp.dao.impl.PcbDAOImpl;
-import com.wkp.pojo.Jcb;
 import com.wkp.pojo.Pcb;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -12,10 +11,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 @WebServlet("/ProcessScheduling")
 public class ProcessSchedulingServlet extends HttpServlet {
@@ -35,6 +36,13 @@ public class ProcessSchedulingServlet extends HttpServlet {
         }
     }
 
+    /**
+     * 进程调度：时间片轮转法
+     *
+     * @param req
+     * @param resp
+     * @throws IOException
+     */
     private void RoundRobinScheduling(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("text/html;charset=utf-8");
         PrintWriter respWriter = resp.getWriter();
@@ -50,7 +58,7 @@ public class ProcessSchedulingServlet extends HttpServlet {
         int timeQuantum = Integer.parseInt(req.getParameter("timeQuantum"));
         // 3. 开始轮转，一边进行一边输出
         LocalDateTime currentTime = pcbLinkedList.getFirst().getArriveTime();
-        int count = 1, run = 0;
+        int run = 0;
         while (!pcbLinkedList.isEmpty()) {
             String str = "";
             int pid;
@@ -69,19 +77,18 @@ public class ProcessSchedulingServlet extends HttpServlet {
                 if (sub > timeQuantum) {
                     // 一个时间片不够用
                     run = timeQuantum;
-                    ProcessRun(head, respWriter, currentTime, run, "PREPARED");
+                    processRun(head, respWriter, currentTime, run, "PREPARED");
                     head.setUsedTime(usedTime + timeQuantum);
                     pcbLinkedList.addLast(head);
                     currentTime.plusMinutes(timeQuantum);
                 } else {
                     // 一个时间片够用
                     run = sub;
-                    ProcessRun(head, respWriter, currentTime, run, "FINISHED");
+                    processRun(head, respWriter, currentTime, run, "FINISHED");
                     head.setUsedTime(runTime);
                     currentTime.plusMinutes(sub);
                 }
             }
-            ++count;
         }
         respWriter.println("轮转完成");
     }
@@ -93,38 +100,40 @@ public class ProcessSchedulingServlet extends HttpServlet {
      * @param respWriter  客户端输出流
      * @param currentTime 当前时间
      */
-    private void ProcessRun(Pcb pcb, PrintWriter respWriter, LocalDateTime currentTime, int run, String state) {
+    private void processRun(Pcb pcb, PrintWriter respWriter, LocalDateTime currentTime, int run, String state) {
         respWriter.println("开始调用进程->时间：" + currentTime +
                 ", 进程" + pcb.getPid() + ":" + pcb.getProcessName() + "开始，状态为：" + "RUNNING" + "<br>");
         respWriter.println("结束调用进程->时间：" + currentTime.plusMinutes(run) +
                 ", 进程" + pcb.getPid() + ":" + pcb.getProcessName() + "结束，状态为：" + state + "<br><br>");
     }
 
+    /**
+     * 进程调度：先来先服务算法
+     *
+     * @param req
+     * @param resp
+     */
     private void FCFS(HttpServletRequest req, HttpServletResponse resp) {
-        List<Pcb> pcbList = pcbDAO.getAllPcb();
+        LinkedList<Pcb> pcbList = new LinkedList<>(pcbDAO.getAllPcb());
         pcbList.sort(new Comparator<>() {
             @Override
             public int compare(Pcb o1, Pcb o2) {
                 return o1.getArriveTime().compareTo(o2.getArriveTime());
             }
         });
+
         resp.setContentType("text/html");
+        LocalDateTime currentTime = pcbList.getFirst().getArriveTime();
         try (PrintWriter respWriter = resp.getWriter()) {
             while (!pcbList.isEmpty()) {
-                Pcb head = pcbList.get(0);
-                pcbList.remove(0);
-                // 设状态为1：busy运行
-                head.setState(1);
-                int runTime = head.getRunTime();
-                head.setUsedTime(runTime);
-                // 设状态为2：finished完成
-                head.setState(2);
-                respWriter.println("pid：" + head.getPid() + ",process_name:" + head.getProcessName()
-                        + ",arrive_time:" + head.getArriveTime() + "&emsp;运行完成,&emsp;" +
-                        "运行了" + runTime + "分钟，现在其状态为：" +
-                        "FINISHED<br>");
+                Pcb head = pcbList.removeFirst();
+                if (!pcbList.isEmpty() && currentTime.isBefore(pcbList.getFirst().getArriveTime())) {
+                    currentTime = pcbList.getFirst().getArriveTime();
+                }
+                processRun(head, respWriter, currentTime, head.getRunTime(), "FINISHED");
+                currentTime = currentTime.plusMinutes(head.getRunTime());
             }
-            respWriter.println("全部进程运行完成");
+            respWriter.println("调度完成");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
