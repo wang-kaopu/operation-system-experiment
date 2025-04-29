@@ -1,5 +1,7 @@
 package com.wkp.controller;
 
+import com.wkp.dao.JcbDAO;
+import com.wkp.dao.impl.JcbDAOImpl;
 import com.wkp.dao.impl.PcbDAOImpl;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -19,6 +21,7 @@ import java.time.ZoneId;
 @WebServlet("/Update/*")
 public class UpdateServlet extends HttpServlet {
     private PcbDAOImpl pcbDAO = new PcbDAOImpl();
+    private JcbDAOImpl jcbDAO = new JcbDAOImpl();
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -54,17 +57,46 @@ public class UpdateServlet extends HttpServlet {
     }
 
     private void deleteProcess(HttpServletRequest req, HttpServletResponse resp) {
-        int pid = Integer.valueOf(req.getParameter("pid"));
+        int pid = Integer.parseInt(req.getParameter("pid"));
         String sql = "DELETE FROM PCB_TABLE WHERE PID = ?;";
         try {
-            int rows = pcbDAO.executeUpdate(sql, pid);
-            resp.setContentType("text/html");
-            PrintWriter respWriter = resp.getWriter();
-            if (rows > 0) {
-                respWriter.println("成功更新" + rows + "行");
-            } else {
-                respWriter.println("更新失败");
-            }
+            int rows = jcbDAO.executeUpdate(sql, pid);
+            responseUpdateRows(resp, rows);
+        } catch (SQLException | IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void addJob(HttpServletRequest req, HttpServletResponse resp) {
+        String processName = req.getParameter("jobName");
+        int level = Integer.parseInt(req.getParameter("level"));
+        LocalDateTime arriveTime = LocalDateTime.parse(req.getParameter("arriveTime"));
+        int runTime = Integer.parseInt(req.getParameter("runTime"));
+        String sql = "INSERT INTO JCB_TABLE VALUES (?, ?, ?, DEFAULT, DEFAULT, DEFAULT, ?, DEFAULT);";
+        try {
+            int rows = jcbDAO.executeUpdate(sql, processName, level, arriveTime, runTime);
+            responseUpdateRows(resp, rows);
+        } catch (SQLException | IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void responseUpdateRows(HttpServletResponse resp, int rows) throws IOException {
+        resp.setContentType("text/html");
+        PrintWriter respWriter = resp.getWriter();
+        if (rows > 0) {
+            respWriter.println("成功更新" + rows + "行");
+        } else {
+            respWriter.println("更新失败");
+        }
+    }
+
+    private void deleteJob(HttpServletRequest req, HttpServletResponse resp) {
+        int jid = Integer.parseInt(req.getParameter("jid"));
+        String sql = "DELETE FROM JCB_TABLE WHERE JID = ?;";
+        try {
+            int rows = jcbDAO.executeUpdate(sql, jid);
+            responseUpdateRows(resp, rows);
         } catch (SQLException | IOException e) {
             throw new RuntimeException(e);
         }

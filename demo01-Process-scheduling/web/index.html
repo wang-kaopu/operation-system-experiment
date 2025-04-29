@@ -6,57 +6,8 @@
     <title>Scheduling Form</title>
 </head>
 <body>
-<h1>Scheduling Form</h1>
-<form action="/scheduling/ProcessScheduling" method="post">
-    <label>Select Algorithm:</label><br>
-    <input type="radio" id="algorithm1" name="algorithm" value="RoundRobinScheduling" onclick="toggleTimeQuantum()">
-    <label for="algorithm1"> Round Robin Scheduling</label><br>
-    <input type="radio" id="algorithm2" name="algorithm" value="FCFS" onclick="toggleTimeQuantum()">
-    <label for="algorithm2"> FCFS</label><br>
-    <input type="radio" id="algorithm3" name="algorithm" value="MultilevelFeedbackQueue" onclick="toggleTimeQuantum()">
-    <label for="algorithm3"> Multilevel Feedback Queue</label><br><br>
-
-    <!-- Time Quantum input fields -->
-    <div id="timeQuantumContainer" style="display: none;">
-        <label for="timeQuantum">Time Quantum:</label><br>
-        <input type="number" id="timeQuantum" name="timeQuantum" min="1" placeholder="Enter time quantum"><br><br>
-    </div>
-
-    <input type="submit" value="Submit">
-</form>
-
-<script>
-    // JavaScript to control the display of the timeQuantum input fields
-    function toggleTimeQuantum() {
-        var rrRadio = document.getElementById('algorithm1');
-        var mlfqRadio = document.getElementById('algorithm3');
-        var timeQuantumContainer = document.getElementById('timeQuantumContainer');
-
-        if (rrRadio.checked) {
-            // Show only one Time Quantum input for Round Robin Scheduling
-            timeQuantumContainer.style.display = 'block';
-            timeQuantumContainer.innerHTML = `
-                <label for="timeQuantum">Time Quantum:</label><br>
-                <input type="number" id="timeQuantum" name="timeQuantum" min="1" placeholder="Enter time quantum"><br><br>
-            `;
-        } else if (mlfqRadio.checked) {
-            // Show three Time Quantum inputs for Multilevel Feedback Queue
-            timeQuantumContainer.style.display = 'block';
-            timeQuantumContainer.innerHTML = `
-                <label for="timeQuantum1">Time Quantum 1:</label><br>
-                <input type="number" id="timeQuantum1" name="timeQuantum1" min="1" placeholder="Enter time quantum 1"><br><br>
-
-                <label for="timeQuantum2">Time Quantum 2:</label><br>
-                <input type="number" id="timeQuantum2" name="timeQuantum2" min="1" placeholder="Enter time quantum 2"><br><br>
-
-                <label for="timeQuantum3">Time Quantum 3:</label><br>
-                <input type="number" id="timeQuantum3" name="timeQuantum3" min="1" placeholder="Enter time quantum 3"><br><br>
-            `;
-        } else {
-            // Hide the Time Quantum container for other algorithms
-            timeQuantumContainer.style.display = 'none';
-        }
-    }
-</script>
+<h1>Scheduling Algorithm </h1>
+    <a href="process_scheduling.html">Process Scheduling 进程调度</a><br>
+    <a href="job_scheduling.html">Job Scheduling 作业调度</a>
 </body>
 </html>
