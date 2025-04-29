@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Scheduling Form</title>
+</head>
+<body>
+<h1>Job Scheduling Form</h1>
+<form action="/scheduling/JobScheduling" method="post">
+    <label for="algorithm">Select Scheduling Algorithm:</label><br>
+    <select id="algorithm" name="algorithm">
+        <option value="SJF">Shortest Job First (SJF)</option>
+        <option value="StaticLevelScheduling">Static Level Scheduling</option>
+    </select><br><br>
+    <input type="submit" value="Submit">
+</form>
+</body>
+</html>

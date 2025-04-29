@@ -2,7 +2,6 @@ package com.wkp.controller;
 
 import com.wkp.dao.impl.PcbDAOImpl;
 import com.wkp.pojo.Pcb;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,14 +15,14 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-@WebServlet("/Scheduling")
-public class SchedulingServlet extends HttpServlet {
+@WebServlet("/ProcessScheduling")
+public class ProcessSchedulingServlet extends HttpServlet {
     private PcbDAOImpl pcbDAO = new PcbDAOImpl();
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp){
         String algorithm = req.getParameter("algorithm");
-        Class<? extends SchedulingServlet> clazz = this.getClass();
+        Class<? extends ProcessSchedulingServlet> clazz = this.getClass();
         Method method;
         try {
             method = clazz.getDeclaredMethod(algorithm, HttpServletRequest.class, HttpServletResponse.class);
@@ -45,7 +44,7 @@ public class SchedulingServlet extends HttpServlet {
             }
         });
         // 2. 获取时间片长度（分钟）
-        int timeQuantum = Integer.valueOf(req.getParameter("timeQuantum"));
+        int timeQuantum = Integer.parseInt(req.getParameter("timeQuantum"));
         // 3. 将进程列表转为队列
         LinkedList<Pcb> pcbLinkedList = new LinkedList<>(pcbList);
         // 4. 开始轮转，一边进行一边输出
@@ -92,7 +91,7 @@ public class SchedulingServlet extends HttpServlet {
 
     private void FCFS(HttpServletRequest req, HttpServletResponse resp) {
         List<Pcb> pcbList = pcbDAO.getAllPcb();
-        pcbList.sort(new Comparator<Pcb>() {
+        pcbList.sort(new Comparator<>() {
             @Override
             public int compare(Pcb o1, Pcb o2) {
                 return o1.getArriveTime().compareTo(o2.getArriveTime());
@@ -124,7 +123,7 @@ public class SchedulingServlet extends HttpServlet {
         resp.setCharacterEncoding("UTF-8");
         List<Pcb> pcbList = pcbDAO.getAllPcb();
         LinkedList<Pcb> queue1 = new LinkedList<>(pcbList), queue2 = new LinkedList<>(), queue3 = new LinkedList<>();
-        pcbList.sort(new Comparator<Pcb>() {
+        pcbList.sort(new Comparator<>() {
             @Override
             public int compare(Pcb o1, Pcb o2) {
                 return o1.getArriveTime().compareTo(o2.getArriveTime());

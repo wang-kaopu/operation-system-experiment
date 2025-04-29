@@ -4,8 +4,6 @@ import com.wkp.dao.BaseDAO;
 import com.wkp.dao.PcbDAO;
 import com.wkp.pojo.Pcb;
 
-import java.lang.reflect.InvocationTargetException;
-import java.sql.SQLException;
 import java.util.List;
 
 public class PcbDAOImpl extends BaseDAO implements PcbDAO {
