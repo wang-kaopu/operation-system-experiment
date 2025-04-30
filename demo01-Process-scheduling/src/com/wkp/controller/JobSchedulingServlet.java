@@ -168,10 +168,9 @@ public class JobSchedulingServlet extends HttpServlet {
         averageTime = averageTime / n;
         averageWeightedTime = averageWeightedTime / n;
         // 1. 计算平均周转时间
-        respWriter.println("平均周转时间：" + averageTime);
+        respWriter.println("平均周转时间：" + averageTime + "分钟<br>");
         // 2. 计算带权平均周转时间
-        respWriter.println("带权平均周转时间：" + averageWeightedTime);
-        respWriter.println("<br>");
+        respWriter.println("带权平均周转时间：" + averageWeightedTime + "分钟<br>");
     }
 
     private void plusWaitTimeOfOtherJob(List<Jcb> jcbList, Jcb jcb) {

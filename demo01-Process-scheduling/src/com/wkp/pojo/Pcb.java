@@ -21,15 +21,15 @@ public class Pcb {
 
     @Override
     public String toString() {
-        String stateString = state == 0 ? "READY" : "FINISHED";
-        return "Pcb{" +
-                "pid=" + pid +
-                ", processName='" + processName + '\'' +
-                ", level=" + level +
-                ", arriveTime=" + arriveTime +
-                ", usedTime=" + usedTime +
-                ", state=" + stateString +
-                ", runTime=" + runTime +
+        String stateString = state == 0 ? "就绪" : "完成";
+        return "PCB{" +
+                "PID=" + pid +
+                ", 进程名='" + processName + '\'' +
+                ", 优先级=" + level +
+                ", 到达时间=" + arriveTime +
+                ", 已运行时长=" + usedTime + "分钟" +
+                ", 状态=" + stateString +
+                ", 服务时长=" + runTime + "分钟" +
                 '}';
     }
 }
