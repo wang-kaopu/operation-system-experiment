@@ -12,10 +12,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.Time;
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.PriorityQueue;
+import java.util.*;
 
 /**
  * 作业调度算法
@@ -40,18 +39,24 @@ public class JobSchedulingServlet extends HttpServlet {
 
     /**
      * 作业调度：短作业优先算法
+     *
      * @param req
      * @param resp
      */
     private void SJF(HttpServletRequest req, HttpServletResponse resp) {
         // 1. 将所有进程转为队列，按时间排序，等待入堆
-        LinkedList<Jcb> jcbLinkedList = new LinkedList<>(jcbDAO.getAllJcb());
-        jcbLinkedList.sort(new Comparator<Jcb>() {
+        List<Jcb> jcbList = jcbDAO.getAllJcb();
+        jcbList.sort(new Comparator<Jcb>() {
             @Override
             public int compare(Jcb o1, Jcb o2) {
                 return o1.getArriveTime().compareTo(o2.getArriveTime());
             }
         });
+        HashMap<Integer, Integer> hashMap = new HashMap<>();
+        for (int i = 0; i < jcbList.size(); ++i) {
+            hashMap.put(jcbList.get(i).getJid(), i);
+        }
+        LinkedList<Jcb> jcbLinkedList = new LinkedList<>(jcbList);
         // 2. 创建小顶堆，按照需要运行时间（作业长度）排序
         PriorityQueue<Jcb> heap = new PriorityQueue<>(new Comparator<Jcb>() {
             @Override
@@ -59,14 +64,15 @@ public class JobSchedulingServlet extends HttpServlet {
                 return Integer.compare(o1.getRunTime(), o2.getRunTime());
             }
         });
-        // 3. 将初始时间设为第一个到达的作业的到达时间
-        selectAndRun(resp, jcbLinkedList, heap);
+        // 3. 开始调度
+        selectAndRun(resp, jcbLinkedList, heap, jcbList, hashMap);
     }
 
     /**
      * 向客户端输出作业运行情况
-     * @param jcb 作业控制块
-     * @param respWriter 客户端输出流
+     *
+     * @param jcb         作业控制块
+     * @param respWriter  客户端输出流
      * @param currentTime 当前时间
      */
     private void JobRun(Jcb jcb, PrintWriter respWriter, LocalDateTime currentTime) {
@@ -77,19 +83,25 @@ public class JobSchedulingServlet extends HttpServlet {
     }
 
     /**
-     * 静态优先权算法，level越小级别越高
+     * 静态优先权算法，level越大级别越高
+     *
      * @param req
      * @param resp
      */
     private void StaticLevelScheduling(HttpServletRequest req, HttpServletResponse resp) {
         // 1. 将所有进程转为队列，按时间排序，等待入堆
-        LinkedList<Jcb> jcbLinkedList = new LinkedList<>(jcbDAO.getAllJcb());
-        jcbLinkedList.sort(new Comparator<Jcb>() {
+        List<Jcb> jcbList = jcbDAO.getAllJcb();
+        jcbList.sort(new Comparator<Jcb>() {
             @Override
             public int compare(Jcb o1, Jcb o2) {
-                return o1.getArriveTime().compareTo(o2.getArriveTime());
+                return 0 - o1.getArriveTime().compareTo(o2.getArriveTime());
             }
         });
+        HashMap<Integer, Integer> hashMap = new HashMap<>();
+        for (int i = 0; i < jcbList.size(); ++i) {
+            hashMap.put(jcbList.get(i).getJid(), i);
+        }
+        LinkedList<Jcb> jcbLinkedList = new LinkedList<>(jcbList);
         // 2. 创建小顶堆，按照需要运行时间（作业长度）排序
         PriorityQueue<Jcb> heap = new PriorityQueue<>(new Comparator<Jcb>() {
             @Override
@@ -98,17 +110,21 @@ public class JobSchedulingServlet extends HttpServlet {
             }
         });
         // 3. 将初始时间设为第一个到达的作业的到达时间
-        selectAndRun(resp, jcbLinkedList, heap);
+        selectAndRun(resp, jcbLinkedList, heap, jcbList, hashMap);
     }
 
     /**
      * 从堆中选出目标进程并执行
+     *
      * @param resp
      * @param jcbLinkedList 含有所有进程的队列
-     * @param heap 用于选取目标进程的队列
+     * @param heap          用于选取目标进程的队列
+     * @param jcbList
+     * @param hashMap
      */
-    private void selectAndRun(HttpServletResponse resp, LinkedList<Jcb> jcbLinkedList, PriorityQueue<Jcb> heap) {
-        // 初始化时间为最早到达的任务的到达时间
+    private void selectAndRun(HttpServletResponse resp, LinkedList<Jcb> jcbLinkedList,
+                              PriorityQueue<Jcb> heap, List<Jcb> jcbList, HashMap<Integer, Integer> hashMap) {
+        // 3. 初始化时间为最早到达的任务的到达时间
         LocalDateTime currentTime = jcbLinkedList.getFirst().getArriveTime();
         resp.setContentType("text/html");
         try (PrintWriter respWriter = resp.getWriter()) {
@@ -123,6 +139,8 @@ public class JobSchedulingServlet extends HttpServlet {
                     Jcb top = heap.poll();
                     // 6. 运行这个作业
                     JobRun(top, respWriter, currentTime);
+                    jcbList.get(hashMap.get(top.getJid())).setState(2);
+                    plusWaitTimeOfOtherJob(jcbList, top);
                     // 7. 完成作业后，重新计算当前时间
                     currentTime = currentTime.plusMinutes(top.getRunTime());
                 } else {
@@ -131,8 +149,37 @@ public class JobSchedulingServlet extends HttpServlet {
                     currentTime = jcbLinkedList.getFirst().getArriveTime();
                 }
             }
+            printJcbList(jcbList, respWriter);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void printJcbList(List<Jcb> jcbList, PrintWriter respWriter) {
+        double averageTime = 0.0, averageWeightedTime = 0.0;
+        int n = jcbList.size();
+        for (Jcb j : jcbList) {
+            respWriter.println(j + "<br>");
+            int waitTime = j.getWaitTime();
+            int runTime = j.getRunTime();
+            averageTime += waitTime + runTime;
+            averageWeightedTime += (waitTime + runTime) / (double) runTime;
+        }
+        averageTime = averageTime / n;
+        averageWeightedTime = averageWeightedTime / n;
+        // 1. 计算平均周转时间
+        respWriter.println("平均周转时间：" + averageTime);
+        // 2. 计算带权平均周转时间
+        respWriter.println("带权平均周转时间：" + averageWeightedTime);
+        respWriter.println("<br>");
+    }
+
+    private void plusWaitTimeOfOtherJob(List<Jcb> jcbList, Jcb jcb) {
+        for (Jcb j : jcbList) {
+            if (j.getState() == 2 || j.getJid() == jcb.getJid()) {
+                continue;
+            }
+            j.setWaitTime(j.getWaitTime() + jcb.getRunTime());
         }
     }
 }
