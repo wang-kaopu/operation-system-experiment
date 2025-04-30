@@ -73,7 +73,7 @@ public class JobSchedulingServlet extends HttpServlet {
         respWriter.println("开始作业->时间：" + currentTime +
                 ", 作业" + jcb.getJid() + ":" + jcb.getJobName() + "开始<br>");
         respWriter.println("结束作业->时间：" + currentTime.plusMinutes(jcb.getRunTime()) +
-                ", 作业" + jcb.getJid() + ":" + jcb.getJobName() + "结束<br><br>");
+                ", 作业" + jcb.getJid() + ":" + jcb.getJobName() + "结束<br>");
     }
 
     /**
